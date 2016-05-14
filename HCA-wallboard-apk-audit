@@ -1,0 +1,23 @@
+SELECT ac.cmh_id
+,ac.account_name
+,ap.account_name parent_account
+,ac.stage
+,ast.name asset_id
+,ast.status sf_status
+,u.last_name
+,d.device_apk_version
+,d.status mdm_status
+,d.last_seen_at mdm_last_seen
+
+FROM salesforce.assets ast
+JOIN salesforce.accounts ac ON ac.account_id = ast.account_id
+JOIN salesforce.accounts ap ON ac.parent_account_id = ap.account_id
+JOIN salesforce.users u ON u.user_id = ac.owner_id
+LEFT JOIN mdm.devices d ON lower(d.asset_id) = lower(ast.name)
+
+WHERE ac.hierarchy_group = '001C000001I1fPQ'
+AND ast.type = 'Wallboard'
+AND d.status = 'Active'
+AND d.device_apk_version <> '1.3'
+
+ORDER BY u.last_name, ac.cmh_id
