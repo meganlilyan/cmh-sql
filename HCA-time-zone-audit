@@ -1,8 +1,8 @@
 SELECT ac.cmh_id
 ,ac.account_name
-,ap.account_name parent_account
+,ap.account_name hca_market
 ,agp.account_name hca_division
-,ac.billing_state_province
+,ac.billing_state_province state
 ,ac.stage
 ,ast.type
 ,ast.name asset_id
