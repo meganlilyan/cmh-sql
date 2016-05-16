@@ -1,0 +1,28 @@
+SELECT ac.cmh_id
+,ac.account_name
+,ap.account_name parent_account
+,agp.account_name hca_division
+,ac.billing_state_province
+,ac.stage
+,ast.name asset_id
+,ast.status sf_status
+,u.last_name
+,d.status mdm_status
+,d.time_zone_of_device
+,d.sleep_time
+,d.wake_time
+,d.sleep_hours
+,d.last_seen_at mdm_last_seen
+
+FROM salesforce.assets ast
+JOIN salesforce.accounts ac ON ac.account_id = ast.account_id
+JOIN salesforce.accounts ap ON ac.parent_account_id = ap.account_id
+JOIN salesforce.accounts agp ON ap.parent_account_id = agp.account_id
+JOIN salesforce.users u ON u.user_id = ac.owner_id
+LEFT JOIN mdm.devices d ON lower(d.asset_id) = lower(ast.name)
+
+WHERE ac.hierarchy_group = '001C000001I1fPQ'
+AND ast.type = 'Tablet'
+AND d.status = 'Active'
+
+ORDER BY agp.account_name, ac.cmh_id
