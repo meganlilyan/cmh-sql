@@ -4,6 +4,7 @@ SELECT ac.cmh_id
 ,agp.account_name hca_division
 ,ac.billing_state_province
 ,ac.stage
+,ast.type
 ,ast.name asset_id
 ,ast.status sf_status
 ,u.last_name
@@ -22,7 +23,6 @@ JOIN salesforce.users u ON u.user_id = ac.owner_id
 LEFT JOIN mdm.devices d ON lower(d.asset_id) = lower(ast.name)
 
 WHERE ac.hierarchy_group = '001C000001I1fPQ'
-AND ast.type = 'Tablet'
 AND d.status = 'Active'
 
 ORDER BY agp.account_name, ac.cmh_id
