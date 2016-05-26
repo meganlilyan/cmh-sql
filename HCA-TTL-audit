@@ -21,4 +21,4 @@ AND ast.type = 'Tablet'
 AND d.status = 'Active'
 AND d.default_min_volume_in_percentage <> 1
 
-ORDER BY u.last_name, ac.cmh_id
+ORDER BY ast.status, ac.cmh_id
