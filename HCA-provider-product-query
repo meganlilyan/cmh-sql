@@ -1,0 +1,157 @@
+WITH Grandparents AS (
+						SELECT	DISTINCT
+								a.parent_account_id
+							,	b.parent_account_id AS grandparent_account_id
+						FROM (
+								SELECT	DISTINCT
+										parent_account_id
+								
+								FROM salesforce.accounts
+							 ) a
+						
+						INNER JOIN salesforce.accounts b
+						ON a.parent_account_id = b.account_id
+							AND b.parent_account_id IS NOT NULL
+						)
+,	CategoryMapping AS (
+						SELECT 'Dermatology' AS lead_qualification, 'Dermatology' AS Category, 0 AS PCP UNION ALL
+						SELECT 'Obstetrics & Gynecology' AS lead_qualification, 'Obstetrics & Gynecology' AS Category, 0 AS PCP UNION ALL
+						SELECT 'Platinum PCP - Neurology' AS lead_qualification, 'Neurology' AS Category, 1 AS PCP UNION ALL
+						SELECT 'Platinum PCP - Urology' AS lead_qualification, 'Urology' AS Category, 1 AS PCP UNION ALL
+						SELECT 'Oncology' AS lead_qualification, 'Oncology' AS Category, 0 AS PCP UNION ALL
+						SELECT 'Urology' AS lead_qualification, 'Urology' AS Category, 0 AS PCP UNION ALL
+						SELECT 'Cardiology' AS lead_qualification, 'Cardiology' AS Category, 0 AS PCP UNION ALL
+						SELECT 'Gastroenterology' AS lead_qualification, 'Gastroenterology' AS Category, 0 AS PCP UNION ALL
+						SELECT 'Neurology' AS lead_qualification, 'Neurology' AS Category, 0 AS PCP UNION ALL
+						SELECT 'Rheumatology' AS lead_qualification, 'Rheumatology' AS Category, 0 AS PCP UNION ALL
+						SELECT 'Platinum PCP - Infectious Disease' AS lead_qualification, 'Infectious Disease' AS Category, 1 AS PCP UNION ALL
+						SELECT 'Platinum PCP - Endocrinology' AS lead_qualification, 'General Health' AS Category, 1 AS PCP UNION ALL
+						SELECT 'Infectious Disease' AS lead_qualification, 'Infectious Disease' AS Category, 0 AS PCP UNION ALL
+						SELECT 'Platinum PCP - Allergy' AS lead_qualification, 'Allergy' AS Category, 1 AS PCP UNION ALL
+						SELECT 'Platinum PCP - Dermatology' AS lead_qualification, 'Dermatology' AS Category, 1 AS PCP UNION ALL
+						SELECT 'Platinum PCP - Gastroenterology' AS lead_qualification, 'Gastroenterology' AS Category, 1 AS PCP UNION ALL
+						SELECT 'Platinum PCP - Obstetrics & Gynecology' AS lead_qualification, 'Obstetrics & Gynecology' AS Category, 1 AS PCP UNION ALL
+						SELECT 'Platinum PCP - Oncology' AS lead_qualification, 'Oncology' AS Category, 1 AS PCP UNION ALL
+						SELECT 'Platinum PCP - Rheumatology' AS lead_qualification, 'Rheumatology' AS Category, 1 AS PCP UNION ALL
+						SELECT 'General Health' AS lead_qualification, 'General Health' AS Category, 1 AS PCP UNION ALL
+						SELECT 'Allergy' AS lead_qualification, 'Allergy' AS Category, 0 AS PCP UNION ALL
+						SELECT 'Platinum PCP - Cardiology' AS lead_qualification, 'Cardiology' AS Category, 1 AS PCP UNION ALL
+						SELECT 'Optometry' AS lead_qualification, 'Optometry' AS Category, 0 AS PCP UNION ALL
+						SELECT 'Ophthalmology' AS lead_qualification, 'Optometry' AS Category, 0 AS PCP
+						)						
+,	Qualifications AS (
+						SELECT 	DISTINCT
+								a.account_id
+							,	a.contact_id
+							,	a.prescriber
+							,	ISNULL(c.category,b.lead_qualification) AS category
+							,	CASE WHEN c.category IN ('Rheumatology','Dermatology','Gastroenterology','Infectious Disease','Neurology','Cardiology') OR e.npi IS NOT NULL THEN 1 ELSE 0 END AS ABQ --Formula for how ABQ was calculated (ensure it is most up to date)
+
+						FROM salesforce.contacts_all a
+						
+						LEFT JOIN (SELECT DISTINCT npi, lead_qualification FROM qualifications.qualified_growth_doctors WHERE growth_qualification = TRUE) b --Mapping from npi to lead_qualification
+						ON a.npi = b.npi
+						
+						LEFT JOIN CategoryMapping c
+						ON b.lead_qualification = c.lead_qualification
+
+						INNER JOIN salesforce.accounts d
+						ON a.account_id = d.account_id
+						
+						LEFT JOIN rbaskin.gen_health_leads_score e --Which General Health NPIs qualify for a WB
+						ON a.npi = e.npi
+							AND e.final_score >= 34.7
+						)	
+,	Qualifications_Summary AS (
+						SELECT
+								a.account_id
+							,	prescribers
+							,	qualified_prescribers
+							,	ABQ_prescribers
+							,	LISTAGG(category,', ') AS qualifications
+							
+						FROM (
+								SELECT
+										account_id 
+									,	COUNT(CASE WHEN prescriber = TRUE THEN contact_id END) AS prescribers
+									,	COUNT(CASE WHEN category IS NOT NULL THEN contact_id END) AS qualified_prescribers
+									,	COUNT(CASE WHEN ABQ = 1 THEN contact_id END) AS ABQ_prescribers
+										
+								FROM Qualifications
+								
+								GROUP BY
+										1
+							 ) a
+						
+						LEFT JOIN (
+									SELECT	DISTINCT
+											account_id
+										,	category
+									
+									FROM Qualifications
+									) b
+						ON a.account_id = b.account_id
+						
+						GROUP BY
+								1,2,3,4
+						)	
+,	Products AS (
+					SELECT
+							account_id
+						,	MAX(CASE WHEN product_type = 'Waiting Room Screen' THEN quantity ELSE 0 END) AS TVs
+						,	MAX(CASE WHEN product_type = 'Tablet' THEN quantity ELSE 0 END) AS Tablets
+						,	MAX(CASE WHEN product_type = 'Wallboard' THEN quantity ELSE 0 END) AS Wallboards
+						
+					FROM (
+							SELECT
+									a.account_id
+								,	product_type
+								,	SUM(ISNULL(a.num_of_products_installed,a.number_of_sales)) AS quantity
+								
+							FROM shared.contextmedia_products a
+							
+							WHERE a.sales_stage = 'Qualified'
+							AND ISNULL(a.product_stage,'') NOT IN ('Uninstalled','Retired')
+							
+							GROUP BY
+									1,2
+						 ) a
+						 
+					GROUP BY
+							1
+					)											
+SELECT
+		a.account_id
+	,	a.cmh_id
+	,	a.account_name
+	,	a.parent_account_id
+	,	b.grandparent_account_id
+	,	a.stage
+	,	a.lead_category
+	,	c.qualifications
+	,	c.prescribers
+	,	c.qualified_prescribers
+	,	c.ABQ_prescribers
+	--,	a.num_providers
+	--,	a.num_exam_rooms
+	,	a.num_waiting_rooms
+	,	d.TVs
+	,	d.Tablets
+	,	d.Wallboards
+
+FROM salesforce.accounts a
+	
+LEFT JOIN Grandparents b
+ON a.parent_account_id = b.parent_account_id
+
+LEFT JOIN Qualifications_Summary c
+ON a.account_id = c.account_id
+
+LEFT JOIN Products d
+ON a.account_id = d.account_id
+
+WHERE a.hierarchy_group = '001C000001I1fPQ'
+AND UPPER(a.account_name) NOT LIKE '%MARKET%'
+AND UPPER(a.account_name) NOT LIKE '%DIVISION%'
+AND UPPER(a.account_name) NOT LIKE '%AMERICAN GROUP%'
+AND UPPER(a.account_name) NOT LIKE '%NATIONAL GROUP%'
