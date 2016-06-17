@@ -110,7 +110,7 @@ SELECT
 	,	a.cmh_id
 	,	a.account_name
 	,	ag.account_name division
-	,   ap.account_name market
+	,	ap.account_name market
 	,	a.stage
 	,	a.lead_category
 	,	c.qualifications
