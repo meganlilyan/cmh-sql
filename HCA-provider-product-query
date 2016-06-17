@@ -1,19 +1,4 @@
-WITH Grandparents AS (
-						SELECT	DISTINCT
-								a.parent_account_id
-							,	b.parent_account_id AS grandparent_account_id
-						FROM (
-								SELECT	DISTINCT
-										parent_account_id
-								
-								FROM salesforce.accounts
-							 ) a
-						
-						INNER JOIN salesforce.accounts b
-						ON a.parent_account_id = b.account_id
-							AND b.parent_account_id IS NOT NULL
-						)
-,	CategoryMapping AS (
+WITH CategoryMapping AS (
 						SELECT 'Dermatology' AS lead_qualification, 'Dermatology' AS Category, 0 AS PCP UNION ALL
 						SELECT 'Obstetrics & Gynecology' AS lead_qualification, 'Obstetrics & Gynecology' AS Category, 0 AS PCP UNION ALL
 						SELECT 'Platinum PCP - Neurology' AS lead_qualification, 'Neurology' AS Category, 1 AS PCP UNION ALL
@@ -124,8 +109,8 @@ SELECT
 		a.account_id
 	,	a.cmh_id
 	,	a.account_name
-	,	a.parent_account_id
-	,	b.grandparent_account_id
+	,	ag.account_name division
+	,   ap.account_name market
 	,	a.stage
 	,	a.lead_category
 	,	c.qualifications
@@ -141,8 +126,11 @@ SELECT
 
 FROM salesforce.accounts a
 	
-LEFT JOIN Grandparents b
-ON a.parent_account_id = b.parent_account_id
+LEFT JOIN salesforce.accounts ap
+ON a.parent_account_id = ap.account_id
+
+LEFT JOIN salesforce.accounts ag
+ON ap.parent_account_id = ag.account_id
 
 LEFT JOIN Qualifications_Summary c
 ON a.account_id = c.account_id
