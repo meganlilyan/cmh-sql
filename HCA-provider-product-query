@@ -132,8 +132,8 @@ SELECT
 	,	c.prescribers
 	,	c.qualified_prescribers
 	,	c.ABQ_prescribers
-	--,	a.num_providers
-	--,	a.num_exam_rooms
+	,	a.num_providers
+	,	a.num_exam_rooms
 	,	a.num_waiting_rooms
 	,	d.TVs
 	,	d.Tablets
