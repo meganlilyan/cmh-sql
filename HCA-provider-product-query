@@ -41,7 +41,7 @@ WITH CategoryMapping AS (
 						ON b.lead_qualification = c.lead_qualification
 
 						INNER JOIN salesforce.accounts d
-						ON a.account_id = d.account_id
+						ON a.real_account_id = d.account_id
 						
 						LEFT JOIN rbaskin.gen_health_leads_score e --Which General Health NPIs qualify for a WB
 						ON a.npi = e.npi
