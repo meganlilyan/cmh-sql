@@ -26,14 +26,14 @@ WITH CategoryMapping AS (
 						)						
 ,	Qualifications AS (
 						SELECT 	DISTINCT
-								a.account_id
+								d.account_id
 							,	a.contact_id
 							,	a.prescriber
 							,	ISNULL(c.category,b.lead_qualification) AS category
 							,	CASE WHEN c.category IN ('Rheumatology','Dermatology','Gastroenterology','Infectious Disease','Neurology','Cardiology') OR e.npi IS NOT NULL THEN 1 ELSE 0 END AS ABQ --Formula for how ABQ was calculated (ensure it is most up to date)
 
-						FROM salesforce.contacts_all a
-						
+						FROM salesforce.contacts_all a 
+
 						LEFT JOIN (SELECT DISTINCT npi, lead_qualification FROM qualifications.qualified_growth_doctors WHERE growth_qualification = TRUE) b --Mapping from npi to lead_qualification
 						ON a.npi = b.npi
 						
