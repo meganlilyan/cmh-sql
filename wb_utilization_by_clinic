@@ -1,0 +1,35 @@
+with install_days as
+	(
+	select md.client_id
+		,md.installed_date
+		,md.export_date
+		
+		from mdm.devices_history md
+		join mdm.clinics_history mc
+		  on md.clinic_table_id = mc.id
+		  and md.export_date = mc.export_date
+		  and date_part('dow',md.export_date) not in (0,6)
+		  
+		  where md.export_date >= md.installed_date
+		  and mc.cmh_id = '278686'
+	)
+,active_modes as
+	(
+	SELECT id.*
+		,coalesce(sum(am.count),0) as active_modes
+		
+		from install_days id
+		left join wallboards.active_modes am
+		  on id.client_id = am.client_id
+		  and id.export_date = am.event_date
+		  and transition_type = 'start'
+		  
+		  group by 1,2,3
+	)
+	
+	select count(distinct client_id) as device_count
+		,count(export_date) as bus_days_installed
+		,sum(active_modes) as active_modes
+		,sum(active_modes) / count(distinct client_id)::numeric / count(export_date)::numeric as utilization
+	
+	from active_modes am
