@@ -1,49 +1,50 @@
 --Grab installed days
 with install_days as
-	(
-	select md.client_id
-		,md.installed_date
-		,md.export_date
-		,mc.cmh_id
-		
-		from mdm.devices_history md
-		join mdm.clinics_history mc
-		  on md.clinic_table_id = mc.id
-		  and md.export_date = mc.export_date
-		  and date_part('dow',md.export_date) not in (0,6)
-		  
-		  where md.export_date >= md.installed_date
-		 and type = 'Tablet'
-	)
+    (
+    select md.client_id
+        ,md.installed_date
+        ,md.export_date
+        ,mc.cmh_id
+        
+        from mdm.devices_history md
+        join mdm.clinics_history mc
+          on md.clinic_table_id = mc.id
+          and md.export_date = mc.export_date
+          and date_part('dow',md.export_date) not in (0,6)
+          
+          where md.export_date >= md.installed_date
+         and type = 'Tablet'
+    )
 --Tally up active mode starts whilst installed
 ,active_modes as
-	(
-	SELECT id.*
-		,count(distinct am.session_id) as active_modes
-		
-		from install_days id
-		left join tablets.patient_sessions am
-		  on id.client_id = am.client_id
-		  and id.export_date = am.export_date
-		  
-		  group by 1,2,3,4
-	)
+    (
+    SELECT id.*
+        ,count(distinct am.session_id) as active_modes
+        
+        from install_days id
+        left join tablets.patient_sessions am
+          on id.client_id = am.client_id
+          and id.export_date = am.export_date
+          
+          group by 1,2,3,4
+    )
 --Grab pertinent SF information
-	select am.cmh_id
-		,sa.account_name
-		,'https://na8.salesforce.com/' || sa.account_id as account_url
-		,su.full_name as account_owner
-		,count(distinct client_id) as device_count
-		,count(am.export_date) as bus_days_installed
-		,sum(active_modes) as active_modes
-		,sum(active_modes) / count(distinct client_id)::numeric / count(am.export_date)::numeric as utilization
-	
-	from active_modes am
-	join salesforce.accounts sa
-	  on am.cmh_id = sa.cmh_id
-	join salesforce.users su
-	  on sa.owner_id = su.user_id
-	  
-	  where am.cmh_id not in ('999','9999')
-	group by 1,2,3,4
-	order by 8 desc
+    select am.cmh_id
+        ,sa.account_name
+        ,'https://na8.salesforce.com/' || sa.account_id as account_url
+        ,su.full_name as account_owner
+        ,count(distinct client_id) as device_count
+        ,count(am.export_date) as bus_days_installed
+        ,sum(active_modes) as active_modes
+        ,sum(active_modes) / count(am.export_date)::numeric as utilization
+    
+    from active_modes am
+    join salesforce.accounts sa
+      on am.cmh_id = sa.cmh_id
+    join salesforce.users su
+      on sa.owner_id = su.user_id
+      
+      where am.cmh_id not in ('999','9999')
+      and su.full_name in ('Madeline Irby','Mike Reynolds')
+    group by 1,2,3,4
+    order by 8 desc
