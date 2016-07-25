@@ -38,7 +38,7 @@ with install_days as
 		,count(distinct client_id) as device_count
 		,count(am.export_date) as bus_days_installed
 		,sum(active_modes) as active_modes
-		,sum(active_modes) / count(distinct client_id)::numeric / count(am.export_date)::numeric as utilization
+		,sum(active_modes) / count(am.export_date)::numeric as utilization
 	
 	from active_modes am
 	join salesforce.accounts sa
@@ -47,5 +47,6 @@ with install_days as
 	  on sa.owner_id = su.user_id
 	  
 	  where am.cmh_id not in ('999','9999')
+	  and su.full_name in ('Madeline Irby','Mike Reynolds')
 	group by 1,2,3,4
 	order by 8 desc
