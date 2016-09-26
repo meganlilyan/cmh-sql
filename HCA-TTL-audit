@@ -19,6 +19,7 @@ LEFT JOIN mdm.devices d ON lower(d.asset_id) = lower(ast.name)
 WHERE ac.hierarchy_group = '001C000001I1fPQ'
 AND ast.type = 'Tablet'
 AND d.status = 'Active'
+AND ast.status NOT IN ('Returned','Returning')
 AND d.default_min_volume_in_percentage <> 1
 
 ORDER BY ast.status, ac.cmh_id
