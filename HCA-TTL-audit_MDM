@@ -1,0 +1,23 @@
+SELECT 
+ac.cmh_id
+,ac.account_name
+,ac.network_affiliation
+,ac.stage account_stage
+,d.asset_id
+,d.default_max_volume_in_percentage max_vol
+,d.default_min_volume_in_percentage min_vol
+,d.status mdm_status
+,d.last_seen_at mdm_last_seen
+,u.last_name account_owner
+
+FROM mdm.devices d
+JOIN mdm.clinics c ON d.clinic_table_id = c.id
+JOIN salesforce.accounts ac ON c.cmh_id = ac.cmh_id
+JOIN salesforce.users u ON u.user_id = ac.owner_id
+
+WHERE ac.hierarchy_group = '001C000001I1fPQ'
+AND d.type = 'Tablet'
+AND d.status = 'Active'
+AND d.default_min_volume_in_percentage <> 1
+
+ORDER BY ac.cmh_id
