@@ -1,6 +1,7 @@
 SELECT 
 ac.cmh_id
 ,ac.account_name
+,ac.stage
 ,ast.type
 ,ast.name asset_id
 ,d.clinic_exam_room
@@ -13,7 +14,8 @@ JOIN salesforce.assets ast ON lower(d.asset_id) = lower(ast.name)
 JOIN salesforce.accounts ac ON ac.account_id = ast.account_id
 
 WHERE ac.hierarchy_group = '001C000001I1fPQ'
-AND ac.network_affiliation = 'HCA - Central and West Texas Division'  --search by division
+--AND ac.network_affiliation = 'HCA - Central and West Texas Division'  --search by division
+--AND ast.type = 'Wallboard'
 AND d.status = 'Active'
 AND ast.status = 'Installed'
 AND d.last_seen_at < current_date - integer '1'
