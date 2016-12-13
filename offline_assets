@@ -3,7 +3,6 @@ ac.cmh_id
 ,ac.account_name
 ,ac.network_affiliation
 ,ac.stage
-,ac.stage
 ,d.type
 ,d.asset_id
 ,d.clinic_exam_room
@@ -16,6 +15,6 @@ JOIN salesforce.accounts ac ON c.cmh_id = ac.cmh_id
 WHERE ac.hierarchy_group = '001C000001I1fPQ'
 AND d.type = 'Wallboard'
 AND d.status = 'Active'
-AND d.last_seen_at < current_date - integer '2'
+AND d.last_seen_at < current_date - integer '1'
 
-ORDER BY ac.cmh_id
+ORDER BY ac.network_affiliation
