@@ -1,0 +1,61 @@
+WITH Products AS (
+
+					SELECT
+							account_id
+						,	MAX(CASE WHEN product_type = 'Waiting Room Screen' THEN quantity ELSE 0 END) AS TVs
+						,	MAX(CASE WHEN product_type = 'Tablet' THEN quantity ELSE 0 END) AS Tablets
+						,	MAX(CASE WHEN product_type = 'Wallboard' THEN quantity ELSE 0 END) AS Wallboards
+
+					FROM (
+
+							SELECT
+									a.account_id
+								,	product_type
+								,	SUM(ISNULL(a.num_of_products_installed,a.number_of_sales)) AS quantity
+
+							FROM shared.contextmedia_products a
+
+							WHERE a.sales_stage = 'Qualified'
+							AND ISNULL(a.product_stage,'') NOT IN ('Uninstalled','Retired')
+
+							GROUP BY
+									1,2
+                  
+						 ) a
+             
+					GROUP BY
+
+							1
+					)											
+
+SELECT
+
+		a.account_id
+	,	a.cmh_id
+	,	a.account_name
+	,	ag.account_name division
+	,	ap.account_name market
+	,	a.stage
+	,	a.num_providers
+	,	a.num_exam_rooms
+	,	a.num_waiting_rooms
+	,	d.TVs
+	,	d.Tablets
+	,	d.Wallboards
+
+FROM salesforce.accounts a
+
+LEFT JOIN salesforce.accounts ap
+ON a.parent_account_id = ap.account_id
+
+LEFT JOIN salesforce.accounts ag
+ON ap.parent_account_id = ag.account_id
+
+LEFT JOIN Products d
+ON a.account_id = d.account_id
+
+WHERE a.hierarchy_group = '001C000001I1fPQ'
+AND UPPER(a.account_name) NOT LIKE '%MARKET%'
+AND UPPER(a.account_name) NOT LIKE '%DIVISION%'
+AND UPPER(a.account_name) NOT LIKE '%AMERICAN GROUP%'
+AND UPPER(a.account_name) NOT LIKE '%NATIONAL GROUP%'
