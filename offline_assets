@@ -16,6 +16,7 @@ JOIN salesforce.accounts ac ON c.cmh_id = ac.cmh_id
 WHERE ac.hierarchy_group = '001C000001I1fPQ'
 AND d.type = 'Wallboard'
 AND d.status = 'Active'
+AND ac.stage = 'Installed'
 AND d.device_apk_version <> '3.0'
 AND d.last_seen_at < current_date - integer '1'
 
