@@ -1,0 +1,9 @@
+select display_unit_id
+	,name
+	,clinic_id
+	
+	from broadsign.hosts bh
+	where clinic_id in
+		(select cmh_id from salesforce.accounts where hierarchy_group = '001C000001I1fPQ') --HCA hierarchy
+		
+		and bh.active IS TRUE --player is active
