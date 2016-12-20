@@ -1,0 +1,21 @@
+SELECT 
+ac.cmh_id
+,ac.account_name
+,ac.network_affiliation
+,ac.stage
+,d.type
+,d.asset_id
+,d.clinic_exam_room
+,d.ssid
+,d.last_seen_at
+
+FROM mdm.devices d
+JOIN mdm.clinics c ON d.clinic_table_id = c.id
+JOIN salesforce.accounts ac ON c.cmh_id = ac.cmh_id
+
+WHERE ac.hierarchy_group = '001C000001I1fPQ'
+AND ac.stage = 'Installed'
+AND d.status = 'Active'
+AND d.ssid LIKE '%PHYSVCS_Vendor%'
+
+ORDER BY ac.cmh_id
