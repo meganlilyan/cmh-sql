@@ -17,7 +17,7 @@ WHERE ac.hierarchy_group = '001C000001I1fPQ'
 AND ac.stage = 'Installed'
 AND d.type = 'Wallboard'
 AND d.status = 'Active'
-AND d.device_apk_version <> '3.0'
+AND d.device_apk_version NOT IN ('3.0','3.0.1')
 AND d.last_seen_at > current_date
 
 ORDER BY ac.cmh_id
