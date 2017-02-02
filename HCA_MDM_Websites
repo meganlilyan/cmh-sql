@@ -1,0 +1,23 @@
+--Search for GetFeedback Survey on HCA Tablets
+
+SELECT 
+ac.cmh_id
+,ac.account_name
+,ac.network_affiliation
+,ac.stage account_stage
+,d.asset_id
+,d.status mdm_status
+,d.last_seen_at mdm_last_seen
+,d.clinic_website_details
+
+FROM mdm.devices d
+JOIN mdm.clinics c ON d.clinic_table_id = c.id
+JOIN salesforce.accounts ac ON c.cmh_id = ac.cmh_id
+
+WHERE ac.hierarchy_group = '001C000001I1fPQ'
+AND d.type = 'Tablet'
+AND ac.stage = 'Installed'
+AND d.status = 'Active'
+AND d.clinic_website_details LIKE '%getfeedback%'
+
+ORDER BY ac.cmh_id
