@@ -6,6 +6,7 @@ ac.cmh_id
 ,ac.network_affiliation
 ,ac.stage account_stage
 ,d.asset_id
+,d.installed_date
 ,d.status mdm_status
 ,d.last_seen_at mdm_last_seen
 ,d.clinic_website_details
