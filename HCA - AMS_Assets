@@ -1,0 +1,23 @@
+SELECT
+a.cmh_id
+,ac.account_name
+,ac.stage account_stage
+,a.ams_id
+,a.asset_tag
+,a.source_system
+,a.product
+,a.product_use
+,a.status asset_status
+,a.deployment_date
+,a.date_last_shipped
+,a.last_pinged_at
+,a.ssid
+,a.likelihood_ssid_is_at_cmh_hq
+,a.salesforce_id
+
+FROM ams.assets as a
+LEFT JOIN salesforce.accounts ac ON a.cmh_id = ac.cmh_id
+
+WHERE ac.hierarchy_group = '001C000001I1fPQ'
+
+ORDER BY ac.cmh_id
