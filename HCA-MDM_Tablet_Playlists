@@ -36,3 +36,5 @@ and ac.stage = 'Installed'
 and md.status = 'Active'
 
 ORDER BY ac.cmh_id
+
+--doesn't full work, missing some playlists
