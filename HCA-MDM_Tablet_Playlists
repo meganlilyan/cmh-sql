@@ -1,0 +1,38 @@
+select 
+ac.cmh_id
+,ac.account_name
+,ac.network_affiliation
+,ac.stage account_stage
+,md.asset_id
+,md.installed_date
+,md.status mdm_status
+,md.last_seen_at last_seen
+,mp.title as content_playlist
+,mccp.working_title as customization_playlist_title_w
+,mccp.title as customization_playlist_title
+,mc.name as legacy_playlist
+,md.id as device_id
+
+from mdm.devices md
+left join mdm.contents mc 
+	on md.content_id = mc.id
+join mdm.clinics mcl
+	on md.clinic_table_id = mcl.id
+left join mdm.media_manifest_components mmc
+    on md.id = mmc.parent_id 
+    and (current IS TRUE or upcoming IS TRUE)
+    and mmc.type = 'DeviceMediaManifestComponent'
+left join mdm.playlists mp
+    on mmc.outer_playlist_id = mp.id 
+left join mdm.clinic_customization_playlist_matrices mccpm
+    on mcl.cmh_id = mccpm.clinic_id
+left join mdm.clinic_customization_playlists mccp
+    on mccpm.clinic_customization_playlist_id = mccp.id 
+join salesforce.accounts ac ON mcl.cmh_id = ac.cmh_id
+
+where ac.hierarchy_group = '001C000001I1fPQ'
+and md.type = 'Tablet'
+and ac.stage = 'Installed'
+and md.status = 'Active'
+
+ORDER BY ac.cmh_id
