@@ -1,10 +1,10 @@
 SELECT
 a.cmh_id
 ,ac.account_name
-,ac.billing_street
-,ac.billing_city
-,ac.billing_state_province
-,ac.billing_zip_postal_code
+,ac.billing_street address
+,ac.billing_city city
+,ac.billing_state_province state
+,ac.billing_zip_postal_code zip
 ,ac.stage account_stage
 ,ac.network_affiliation division
 ,ap.account_name market
