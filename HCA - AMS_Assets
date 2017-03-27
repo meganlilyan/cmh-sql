@@ -1,7 +1,13 @@
 SELECT
 a.cmh_id
 ,ac.account_name
+,ac.billing_street
+,ac.billing_city
+,ac.billing_state_province
+,ac.billing_zip_postal_code
 ,ac.stage account_stage
+,ac.network_affiliation division
+,ap.account_name market
 ,a.ams_id
 ,a.asset_tag
 ,a.source_system
@@ -17,6 +23,7 @@ a.cmh_id
 
 FROM ams.assets as a
 LEFT JOIN salesforce.accounts ac ON a.cmh_id = ac.cmh_id
+JOIN salesforce.accounts ap ON ac.parent_account_id = ap.account_id
 
 WHERE ac.hierarchy_group = '001C000001I1fPQ'
 
